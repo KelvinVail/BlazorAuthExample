@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject IAccessTokenProvider TokenProvider
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<ul>
+    <AuthorizeView>
+        <Authorized>
+            <li><NavLink href="" Match="NavLinkMatch.All">Home</NavLink></li>
+            <li><NavLink href="/new-bug">New Bug</NavLink></li>
+            <li><button @onclick="BeginSignOut">Log Out (@context.User.Identity.Name)</button></li>
+            <li><button @onclick="WriteToken">Write Token</button></li>
+            <li>@Token</li>
+        </Authorized>
+        <NotAuthorized>
+            <li><NavLink href="/authentication/login">Log In</NavLink></li>
+        </NotAuthorized>
+    </AuthorizeView>
+</ul>
+
+@code
+{
+    public string Token { get; set; }
+
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("/authentication/logout");
+    }
+
+    private async Task WriteToken()
+    {
+        var tokenResult = await TokenProvider.RequestAccessToken();
+        if (tokenResult.TryGetToken(out var token))
+        {
+            Token = token.Value;
+            System.Diagnostics.Debug.WriteLine(token.Value);
+        }
+        else
+        {
+            Token = "No Token";
+            System.Diagnostics.Debug.WriteLine("No Token");
+        }
+    }
+}
